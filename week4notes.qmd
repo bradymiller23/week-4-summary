@@ -1,13 +1,162 @@
 ---
-title: "Week-4-Notes"
+title: "Week 4 Notes"
 format: html
 ---
 
 # January 31st
 
+## Intro to statistical learning
+
+-   Statistical learning = finding patterns in the data
+-   comes into play when we apply a machine learning to make some inference
+-   Learn to make predictions
+-   Quantify those predictions
+
+``` {r}
+library(tidyverse)
+library(knitr)
+```
+
+```r
+library(ISLR2) 
+library(cowplot)
+library(kableExtra)
+library(htmlwidgets)
+```
+
+-   Suppose we are given a data set
+
+1.  x = \[X1, X2,...,Xp\] -\> called the predictor variables/indep variables/covariates
+2.  y -\> the response variable/outcome/dependent variables
+
+-   Goal of statistical learning is to find a function f such that y = f(X), i.e, yi = f(Xi) = f(X(i,1), X(i,2),...,X(i,p))
+
+#### Different flavors: Statistical learning
+
+-   supervised learning
+    1.  **regression** (y is an element of real numbers) -\> will have quantitative responses
+    2.  **classification** (y is an element of categorical)
+        -   have static dataset with x and y
+        -   static variables are variables that won't change
+-   unsupervised learning
+    1.  there is no y
+-   semi-supervised learning
+    1.  refers to case when we have y
+    2.  one part of it corresponds to supervised learning while another part refers to unsupervised learning
+-   reinforcement learning
+    1.  corresponds to case when the model is being penalized for doing something wrong
+    2.  refers to when x and y variables can change
+
+## Simple Linear Regression
+
+``` {r}
+url <- "https://online.stat.psu.edu/stat462/sites/onlinecourses.science.psu.edu.stat462/files/data/poverty/index.txt"
+  
+df <- read_tsv(url)
+df %>% 
+  head(.,10) %>%
+  kable()
+```
+
+* Goal -> predict birth rate as function of the poverty rate
+```{r}
+x <- df$povpct
+y <- df$brth15to17
+```
+
+```r
+# Scatterplot -> visualize relationship between x and y variables
+colnames(df) <- tolower(colnames(df))
+
+plot(
+  x,
+  y, 
+  pch = 20,
+  xlab = "Pov %",
+  ylab = "Birth rate (15-17)"
+)
+```
+
+* y = beta0 + (beta1 * x) <- want to find line that looks like this
+  1. beta0 = intercept -> the value of the y coordinate when x = 0
+  2. beta1 = slope -> for every 1 increase in x, y increases/decreases by beta1
+  
+  
+```r
+plt <- function() {
+plot(
+  x,
+  y, 
+  pch = 20,
+  xlab = "Pov %",
+  ylab = "Birth rate (15-17)"
+)
+}
+plt()
+```
+
+```r
+# lines through the points
+b0 <- 1
+b1 <- 2
+plt()
+curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
 
 
+b0 <- c(-2, 0, 2)
+b1 <- c(0, 1, 2)
+par(mfrow = c(3,3))
+for (b0 in b0){
+  for (b1 in b1){
+    plt()
+    curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
+    title(main = paste("b0 = ", b0, "and b1 =", b1))
+  }
+}
+```
+  
+#### Motivation
 
+#### l2 estimator (least squares estimator)
+* characterize error in each data point by calculating the distance/projection from a point onto the regression line
+* error value = y - y(hat)
+
+```r
+# can change b1 values around to adjust distance from points to regression line
+b0 <- 10
+b1 <- 1.5
+
+yhat <- b0 + b1 * x 
+
+plt()
+curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
+title(main = paste("b0 = ", b0, "and b1 =", b1))
+segments(x,y,x,yhat)
+
+  
+
+
+```
+* best fit line minimizes residuals (finding optimal b0 & b1 such that the ss_resids value is minimized)
+```r
+resids <- abs(y - yhat)^2
+ss_resids <- sum(resids)
+title(main = paste("b0, b1, ss_residuals = ", b0, b1, ss_resids))
+
+```
+
+```r
+model <- lm(y ~ x)
+sum(residuals(model)^2)
+
+summary(model)
+```
+
+
+#### Inference
+
+#### Prediction
 
 # February 2nd
 
+## Multiple Regression

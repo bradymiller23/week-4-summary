@@ -3,7 +3,7 @@ title: "Week 4 Notes"
 format: html
 ---
 
-# January 31st
+# **January 31st**
 
 ## Intro to statistical learning
 
@@ -60,21 +60,23 @@ df %>%
 
 * Goal -> predict birth rate as function of the poverty rate
 ```{r}
+colnames(df) <- tolower(colnames(df))
 x <- df$povpct
 y <- df$brth15to17
 ```
 
 ```{r}
 # Scatterplot -> visualize relationship between x and y variables
-colnames(df) <- tolower(colnames(df))
-
-plot(
+plt <- function(){
+  plot(
   x,
   y, 
   pch = 20,
   xlab = "Pov %",
   ylab = "Birth rate (15-17)"
 )
+}
+plt()
 ```
 
 * y = beta0 + (beta1 * x) <- want to find line that looks like this
@@ -82,7 +84,7 @@ plot(
   2. beta1 = slope -> for every 1 increase in x, y increases/decreases by beta1
   
   
-```r
+```{r}
 plt <- function() {
 plot(
   x,
@@ -95,7 +97,7 @@ plot(
 plt()
 ```
 
-```r
+```{r}
 # lines through the points
 b0 <- 1
 b1 <- 2
@@ -103,8 +105,8 @@ plt()
 curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
 
 
-b0 <- c(-2, 0, 2)
-b1 <- c(0, 1, 2)
+b0 <- c(0, 1, 2)
+b1 <- c(1, 2, 3)
 par(mfrow = c(3,3))
 for (b0 in b0){
   for (b1 in b1){
@@ -121,7 +123,7 @@ for (b0 in b0){
 * characterize error in each data point by calculating the distance/projection from a point onto the regression line
 * error value = y - y(hat)
 
-```r
+```{r}
 # can change b1 values around to adjust distance from points to regression line
 b0 <- 10
 b1 <- 1.5
@@ -133,32 +135,222 @@ curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
 title(main = paste("b0 = ", b0, "and b1 =", b1))
 segments(x,y,x,yhat)
 
-  
-
-
 ```
 
 * best fit line minimizes residuals (finding optimal b0 & b1 such that the ss_resids value is minimized)
 
-```r
+```{r}
+plt()
+curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
+segments(x,y,x,yhat)
+
 resids <- abs(y - yhat)^2
 ss_resids <- sum(resids)
-title(main = paste("b0, b1, ss_residuals = ", b0, b1, ss_resids))
+title(main = paste("b0, b1, ss_residuals = ",b0, b1, ss_resids, sep = ","))
 
 ```
 
-```r
+```{r}
 model <- lm(y ~ x)
 sum(residuals(model)^2)
 
 summary(model)
 ```
 
-
 #### Inference
 
 #### Prediction
 
-# February 2nd
+# **February 2nd**
 
-## Multiple Regression
+* In our case we want to model $y$ as a function of $x$. In 'R', the formula for this looks like...
+```{r}
+# covarinant is on right, response variable is on left
+formula(y ~ x) 
+
+typeof(formula(y~x))
+```
+
+
+* A linear regression model in R is called the **L**inear **M**odel function, i.e., 'lm()'
+
+```{r}
+model <- lm(y ~ x)
+model
+summary(model)
+
+
+x2 <- x^2
+model2 <- lm(y ~ x + x2)
+model2
+summary(model2)
+```
+*With a very small p-value, that means we accept the alternate hypothesis against the null hypothesis, which means that that certain variable is a goo predictor
+
+###### What are the null and alternative hypotheses for a regression model?
+
+* Null model/hypothesis
+1. There is no linear relationship between x and y
+ --> This means that in terms of $\beta_0$ and $\beta_1$, that $\beta_0 = 0$ in null hypothesis ($H_0$)
+ --> The alternate hypothesis is that $\beta_1 = 0$
+ 
+ * To summarize: 
+ 
+ $$
+ \begin{align}
+ H_0: \beta_0 = 0 && H_1: \beta_1\ \neq 0
+ \end{align}
+ $$
+ * When we see a small $p$-value, then we reject the null hypothesis in favor of the alternate hypothesis. This means that **there is a significant relationship between $x$ and $y$** or in more mathematical terms, there is significant evidence in favor of a correlation between $x$ and $y$.
+ 
+ * This is what the $p$-values in the model are capturing. We can also us the 'kable' function  to print the results nicely
+ 
+```{r}
+library(broom)
+
+summary(model) %>%
+  broom::tidy() %>%
+  knitr::kable()
+```
+ 
+ 
+ 
+## Multiple Regression 
+
+
+1. Covariate: $x$
+```{r}
+head(x)
+```
+
+2. Response: $y$
+```{r}
+head(y)
+```
+
+3. Fitted values: $\hat{y}$
+```{r}
+yhat <- fitted(model)
+```
+
+4. Residuals: $e = y - \hat{y}$
+```{r}
+res <- residuals(model)
+head(res)
+```
+
+* Some other important terms are the following:
+1. Sum of squares for residuals: 
+$SS_{Res} = \sum_{i=1}^n e_i^2 = \sum_{i=1}^n (y_i - \hat{y}_i^2)$
+
+2. Sum of squares for regression:
+$SS_{Reg} = \sum_{i=1}^n (\hat{y}_i - \bar{y})^2$
+
+3. Sum of squares total:
+$SS_{Tot} = \sum_{i=1}^n (y_i - \bar{y})^2$
+
+
+#### Another important summary in the model output
+* The $R^2$ value, which is given as follows (we have the following terminology for different components of the model)
+
+$$
+R^2 = \frac{SS_{Reg}}{SS_{Tot}}
+$$
+
+* This value will be close to 1 if the regression line is a very good/perfect fir
+* If regression line does very bad job, $R^2$ value drops significantly
+
+
+###### Example
+
+* Creating the following synthetic example 
+
+```{r}
+x <- seq(0,5, length=100)
+
+b0 <- 1
+b1 <- 3
+
+y1 <- b0 + b1 * x + rnorm(100)
+y2 <- b0 + b1 * x + rnorm(100) * 3
+
+par(mfrow = c(1,2))
+
+plot(x,y1)
+plot(x,y2)
+```
+
+
+```{r}
+model1 <- lm(y1 ~ x)
+model2 <- lm(y2 ~ x)
+
+par(mfrow=c(1,2))
+
+plot(x, y1)
+curve(coef(model1)[1] + coef(model1)[2] * x, add = T, col = 'red')
+
+plot(x, y2)
+curve(coef(model2)[1] + coef(model2)[2] * x, add = T, col = 'red')
+```
+
+
+* The summary for model 1 is:
+```{r}
+summary(model1)
+```
+
+* The summary for model 2 is:
+```{r}
+summary(model2)
+```
+* Because the $p$-value is so small, this indicates that there is a relationship between the variables
+
+
+
+#### Prediction
+
+* **Prediction** is the ability of a model to predict values for "unseen" data
+
+```{r}
+x <- df$povpct
+y <- df$brth15to17
+plt()
+```
+
+* Suppose we have a 'new' state formed whose 'povct' value is $21$
+```{r}
+# The best way to predict the y value (birth rate for 15 to 17) is to find point on regression line where the x-value is 21
+plt()
+abline(v = 21, col = 'green')
+lines(x, fitted(lm(y ~ x)), col = 'red')
+```
+
+The best prediction is the interesection. In 'R' you can use the predict() function to do this:
+```{r}
+new_x <- data.frame(x = c(21))
+new_y <- predict(model, new_x)
+new_y
+```
+* If we plot this new point, we get... 
+```{r}
+plt()
+abline(v = 21, col = 'green')
+lines(x, fitted(lm(y ~ x)), col = 'red')
+points(new_x, new_y, col = 'purple')
+```
+
+* We can make predictions not just with single observations but with a whole collection of observation
+
+```{r}
+new_x <- data.frame(x = c(1:21))
+new_y <- predict(model, new_x)
+new_y
+```
+```{r}
+plt()
+for (a in new_x){
+abline(v = list(), col = 'green')}
+lines(x, fitted(lm(y ~ x)), col = 'red')
+points(new_x %>% unlist(), new_y, col = 'purple')
+```

@@ -17,7 +17,7 @@ library(tidyverse)
 library(knitr)
 ```
 
-```r
+```{r}
 library(ISLR2) 
 library(cowplot)
 library(kableExtra)
@@ -64,7 +64,7 @@ x <- df$povpct
 y <- df$brth15to17
 ```
 
-```r
+```{r}
 # Scatterplot -> visualize relationship between x and y variables
 colnames(df) <- tolower(colnames(df))
 
@@ -137,7 +137,9 @@ segments(x,y,x,yhat)
 
 
 ```
+
 * best fit line minimizes residuals (finding optimal b0 & b1 such that the ss_resids value is minimized)
+
 ```r
 resids <- abs(y - yhat)^2
 ss_resids <- sum(resids)

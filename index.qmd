@@ -4,8 +4,8 @@ author: "Brady Miller"
 title-block-banner: true
 title-block-style: default
 toc: true 
-format: html
-# format: pdf
+#format: html
+format: pdf
 ---
 
 ---
@@ -40,19 +40,82 @@ library(htmlwidgets)
   1. supervised learning
       - regression (has quantitative responses)
       - classification (categorical responses)
-  2. unsupervised learning
-    1.  there is no y
-  3. semi-supervised learning
-    1.  refers to case when we have y
-    2.  one part of it corresponds to supervised learning while another part refers to            4. unsupervised learning (reinformence learning - x & y variables can change)
-For example: 
-in class we learnt we learnt about the `map` function from the `purrr` package. 
+  2. unsupervised learning (there is no y)
+  3. semi-supervised learning (case when we have y - both supervised & unsupervised)
+  4. unsupervised learning (reinforcement learning - x & y variables can change)
 
 
-```{R results='hide', fig.width=7, fig.height=7}
 
+#### Simple Linear Regression
+
+Creating a basic scatterplot that displays poverty rate vs birth rate
+``` {r}
+url <- "https://online.stat.psu.edu/stat462/sites/onlinecourses.science.psu.edu.stat462/files/data/poverty/index.txt"
+  
+df <- read_tsv(url)
+
+colnames(df) <- tolower(colnames(df))
+x <- df$povpct
+y <- df$brth15to17
+
+# Scatterplot -> visualize relationship between x and y variables
+plt <- function(){
+  plot(
+  x,
+  y, 
+  pch = 20,
+  xlab = "Pov %",
+  ylab = "Birth rate (15-17)"
+)
+}
+plt()
 ```
 
+
+* Using beta0 and beta 1, described below, we can create a regression line on the model as shown below
+  1. beta0 = intercept -> the value of the y coordinate when x = 0
+  2. beta1 = slope -> for every 1 increase in x, y increases/decreases by beta1
+```{r}
+# lines through the points
+b0 <- 1
+b1 <- 2
+plt()
+curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
+
+```
+Can specify various beta values to use in model so you can find the beta values that result in a regression line that best fits the data
+```{r}
+b0 <- c(0, 1)
+b1 <- c(1, 2)
+par(mfrow = c(2,2))
+for (b0 in b0) {
+  for (b1 in b1) {
+    plt()
+    curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
+    title(main = paste("b0 = ", b0, "and b1 =", b1))
+  }
+}
+```
+
+#### Least sqaures estimator/residuals
+* characterizes error in each data point by calculating the distance/projection from a point onto the regression line
+* error value = y - y(hat)
+* want a line that results in the least amount of total distance from each point to the regression line
+```{r}
+# can change around beta values to get different slopes/intercepts
+b0 <- 10
+b1 <- 1.5
+
+yhat <- b0 + b1 * x 
+
+plt()
+curve(b0 + b1 * x, 0, 30, add = T, col = 'red')
+segments(x,y,x,yhat)
+
+resids <- abs(y - yhat)^2
+ss_resids <- sum(resids)
+title(main = paste("b0, b1, ss_residuals = ",b0, b1, ss_resids, sep = ","))
+```
 
 
 ## Thursday, Feb 2
@@ -66,18 +129,93 @@ Include a _very brief_ summary of what you learnt in this class here.
 
 Today, I learnt the following concepts in class:
 
-1. Item 1
-1. Item 2
-1. Item 3
+1. Using and interpreting linear model summaries (using lm() function)
+1. The null/alternate hypothesis
+1. How to make a prediction using a graph and place that prediction on the graph
 :::
 
-Provide more concrete details here, e.g., 
+#### Linear model function/summary
+Creating models for 2 different functions
+```{r}
+model <- lm(y ~ x)
+model
+summary(model)
 
-In class we learnt how to use the `map` function to create multiple regression diagnostic plots
+x2 <- x^2
+model2 <- lm(y ~ x + x2)
+model2
+summary(model2)
+```
 
-```{R results='hide', fig.height=4}
+* The $R^2$ value tells you if the line is a good fit for the plot (if the  $R^2$ value is close to 1, that means the regression line is a very good/perfect fit, and vice versa)
+* The $p$-value informs you about how good a certain variable is at predicting the outcome. Is also important in coming to a conclusion about hypotheses (discussed in next section).
+* Provides you with the intercept of the line, as well as the standard error, each variables coefficient and other residual values.
 
+
+
+
+
+#### Null/alternate hypotheses
+
+* Null model/hypothesis
+  1. There is no linear relationship between x and y
+      - This means that in terms of $\beta_0$ and $\beta_1$, that $\beta_0 = 0$  in null hypothesis ($H_0$)
+      - The alternate hypothesis is that $\beta_1 = 0$
+ 
+* $p$-value helps determine whether we should accept or reject the null hypothesis
+   1. When we see a small $p$-value, then we reject the null hypothesis in favor of the alternate hypothesis. 
+      - This means that **there is a significant relationship between $x$ and $y$** or in more mathematical terms, 
+      - There is significant evidence in favor of a correlation between $x$ and $y$.
+   2. When we see a large $p$-value, we accept the null hypothesis
+
+
+The code chunk below is creating a plot and adding a regression line   
+```{r}
+x <- seq(0,5, length=100)
+
+b0 <- 1
+b1 <- 3
+
+y2 <- b0 + b1 * x + rnorm(100) * 3
+
+plot(x,y2)
+
+model2 <- lm(y2 ~ x)
+
+plot(x, y2)
+curve(coef(model2)[1] + coef(model2)[2] * x, add = T, col = 'red')
 ```
 
 
-[^footnote]: You can include some footnotes here
+By using the summary for the model, which is shown below, we can look at the p-value to help determine to accept/reject the null hypothesis
+```{r}
+summary(model2)
+```
+* Because the $p$-value is so small, we reject the null hypothesis in favor of the alternate hypothesis. This indicates that there is a relationship between the variables
+
+
+
+
+#### Prediction
+
+* Adding a line where the poverty rate is 21% to give an indication of what the birth rate might be at this point
+```{r}
+x <- df$povpct
+y <- df$brth15to17
+
+plt()
+abline(v = 21, col = 'green')
+lines(x, fitted(lm(y ~ x)), col = 'red')
+```
+
+Predicting birth rates for various poverty rates and plotting them on the line
+```{r}
+new_x <- data.frame(x = c(1:21))
+new_y <- predict(model, new_x)
+
+plt()
+for (a in new_x) {
+abline(v = list(), col = 'green')}
+lines(x, fitted(lm(y ~ x)), col = 'red')
+points(new_x %>% unlist(), new_y, col = 'purple')
+```

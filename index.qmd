@@ -10,7 +10,7 @@ format: html
 
 ---
 
-## Tuesday, Jan 17
+## Tuesday, Jan 31
 
 ::: {.callout-important}
 ## TIL
@@ -19,18 +19,32 @@ Include a _very brief_ summary of what you learnt in this class here.
 
 Today, I learnt the following concepts in class:
 
-1. Item 1
-1. Item 2
-1. Item 3
+1. What statistical learning is and its goals
+1. What simple linear regression is and how to create plots using beta values
+1. What the least squares estimator is and how to create a plot that shows this value/residuals
 :::
 
-Provide more concrete details here. You can also use footenotes[^footnote] if you like
-
-```{R results='hide'}
-
+``` {r}
+library(tidyverse)
+library(knitr)
+library(ISLR2) 
+library(cowplot)
+library(kableExtra)
+library(htmlwidgets)
 ```
 
-
+#### Statistical learning
+* Statistical learning = finding patterns in the data
+* Learn to make and quantify predictions
+* Different types of statistical learning
+  1. supervised learning
+      - regression (has quantitative responses)
+      - classification (categorical responses)
+  2. unsupervised learning
+    1.  there is no y
+  3. semi-supervised learning
+    1.  refers to case when we have y
+    2.  one part of it corresponds to supervised learning while another part refers to            4. unsupervised learning (reinformence learning - x & y variables can change)
 For example: 
 in class we learnt we learnt about the `map` function from the `purrr` package. 
 
@@ -41,7 +55,7 @@ in class we learnt we learnt about the `map` function from the `purrr` package.
 
 
 
-## Thursday, Jan 19
+## Thursday, Feb 2
 
 
 
